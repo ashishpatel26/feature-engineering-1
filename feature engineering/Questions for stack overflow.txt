@@ -1,0 +1,121 @@
+I novice in Machine Learning and get stack with problem, trying to tune the RandomForestRegresson parameter for RandomizedSearchCV, i can't figure it out what's the problem??? here my code
+
+y.head(10)
+  SalePrice
+0  12.247699
+1  12.109016
+2  12.317171
+3  11.849405
+4  12.429220
+5  11.870607
+6  12.634606
+7  12.206078
+8  11.774528
+9  11.678448
+
+x.head()
+	1stFlrSF	2ndFlrSF	3SsnPorch	Alley	BedroomAbvGr	BsmtCond	BsmtExposure	BsmtFinSF1	BsmtFinSF2	BsmtFinType1	...	SaleCondition_Partial	SaleType_COD	SaleType_CWD	SaleType_Con	SaleType_ConLD	SaleType_ConLI	SaleType_ConLw	SaleType_New	SaleType_Oth	SaleType_WD
+0	856	854	0	1	3	4	3	706.0	0.0	2	...	0	0	0	0	0	0	0	0	0	1
+1	1262	0	0	1	3	4	1	978.0	0.0	0	...	0	0	0	0	0	0	0	0	0	1
+2	920	866	0	1	3	4	2	486.0	0.0	2	...	0	0	0	0	0	0	0	0	0	1
+3	961	756	0	1	3	1	3	216.0	0.0	0	...	0	0	0	0	0	0	0	0	0	1
+4	1145	1053	0	1	4	4	0	655.0	0.0	2	...	0	0	0	0	0	0	0	0	0	1
+5 rows × 222 columns
+
+
+
+y = train[['SalePrice']]
+x = all_data[:ntrain]
+test = all_data[ntrain:]
+
+from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import RandomizedSearchCV
+
+from sklearn.ensemble import RandomForestRegressor
+rf_clf = RandomForestRegressor(random_state = 42)
+rf_clf.fit(x,y)
+
+params_grid = {'bootstrap': [True, False],
+               'max_leaf_nodes': [ 2, 5, 10, 20,30, 40, 50, None],
+               'max_depth': [  5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, None],
+               'max_features': ['auto', 'sqrt'],
+               'min_samples_leaf': [1, 2, 4, 5, 10, 20, 30, 40, 50],
+               'min_samples_split': [ 2, 3, 5, 8, 10],
+               'n_estimators': [10, 50, 100, 200, 400]}
+
+kfold = StratifiedKFold( n_splits=10, shuffle=True, random_state=42)
+rf_random = RandomizedSearchCV(estimator = rf_clf, param_distributions = params_grid , n_iter = 100, cv = kfold, 
+                               verbose=1, random_state=42, n_jobs = -1)
+rf_random.fit(x,y)
+
+
+
+Fitting 10 folds for each of 100 candidates, totalling 1000 fits
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-28-f8c4e5b0df95> in <module>()
+     15 rf_random = RandomizedSearchCV(estimator = rf_clf, param_distributions = params_grid , n_iter = 100, cv = kfold, 
+     16                                verbose=1, random_state=42, n_jobs = -1)
+---> 17 rf_random.fit(x,y)
+
+~\Anaconda3\lib\site-packages\sklearn\model_selection\_search.py in fit(self, X, y, groups, **fit_params)
+    637                                   error_score=self.error_score)
+    638           for parameters, (train, test) in product(candidate_params,
+--> 639                                                    cv.split(X, y, groups)))
+    640 
+    641         # if one choose to see train score, "out" will contain train score info
+
+~\Anaconda3\lib\site-packages\sklearn\model_selection\_split.py in split(self, X, y, groups)
+    330                                                              n_samples))
+    331 
+--> 332         for train, test in super(_BaseKFold, self).split(X, y, groups):
+    333             yield train, test
+    334 
+
+~\Anaconda3\lib\site-packages\sklearn\model_selection\_split.py in split(self, X, y, groups)
+     93         X, y, groups = indexable(X, y, groups)
+     94         indices = np.arange(_num_samples(X))
+---> 95         for test_index in self._iter_test_masks(X, y, groups):
+     96             train_index = indices[np.logical_not(test_index)]
+     97             test_index = indices[test_index]
+
+~\Anaconda3\lib\site-packages\sklearn\model_selection\_split.py in _iter_test_masks(self, X, y, groups)
+    632 
+    633     def _iter_test_masks(self, X, y=None, groups=None):
+--> 634         test_folds = self._make_test_folds(X, y)
+    635         for i in range(self.n_splits):
+    636             yield test_folds == i
+
+~\Anaconda3\lib\site-packages\sklearn\model_selection\_split.py in _make_test_folds(self, X, y)
+    587             raise ValueError(
+    588                 'Supported target types are: {}. Got {!r} instead.'.format(
+--> 589                     allowed_target_types, type_of_target_y))
+    590 
+    591         y = column_or_1d(y)
+
+ValueError: Supported target types are: ('binary', 'multiclass'). Got 'continuous' instead.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
